@@ -1,11 +1,17 @@
 import Router from './Router';
 import ThemeProvider from './theme';
+import {Provider} from './Provider'
+
+
+
 
 function App() {
   return (
-    <ThemeProvider>
-    <Router />
-    </ThemeProvider>
+    <Provider>
+      <ThemeProvider>
+        <Router />  
+      </ThemeProvider>
+    </Provider>
   );
 }
 
