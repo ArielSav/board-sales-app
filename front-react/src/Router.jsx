@@ -1,35 +1,47 @@
-import React from 'react';
-import {BrowserRouter, Route, Redirect, Switch} from 'react-router-dom';
-import {Button} from '@material-ui/core';
+import React, {useEffect, useState} from 'react';
+import { BrowserRouter, Switch } from 'react-router-dom';
+import axios from 'axios'
+
+
 
 import Register from './pages/register';
+import Login from './pages/login';
+import Offers from './pages/offers';
+import { useSetState } from './Provider';
+import {PrivateRoute, PublicRoute} from './RouteTypes'
 
 
 export default function Router () {
 
+    const setState = useSetState();
+    const [isLoading, setIsLoading] = useState(true);
 
-    return(
-        <>
+    useEffect(() => {
+        const verifyUser = async () => {
+            await axios.get(
+                "http://localhost:5000/authenticate",
+                {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                }
+            )
+                .then(res =>  setState(() => ({auth: true})))
+                .catch(err => setState(() => ({auth: false})))
+                .finally(() => setIsLoading(false));
+        }
+        verifyUser(); 
+    }, []);
+
+    return isLoading? <p>loading...</p> : (
         <BrowserRouter>
         <Switch>
-        <Route path={["/register"]} component={()=> <Register />} />
-            <Route path="/offers" component={()=> {
-                return (
-                    <>
-                    <Button><p>im in offers page</p></Button>
-                    </>
-                    );
-            }} />
-            <Route path={["/","/signin"]} component={()=> {
-                return (
-                <>
-                <Button><p>im in sign in page</p></Button>
-                </>
-                );
-            }} />
+            <PublicRoute path={["/register"]} component={()=> <Register />} />
+            <PrivateRoute path="/offers" component={()=> <Offers />} />
+            <PrivateRoute path={["/","/login"]} component={()=> <Login />} />
            
         </Switch>
         </BrowserRouter>
-        </>
     );
 }
