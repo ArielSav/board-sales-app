@@ -39,7 +39,7 @@ export default function Router () {
         <Switch>
             <PublicRoute path={["/register"]} component={()=> <Register />} />
             <PrivateRoute path="/offers" component={()=> <Offers />} />
-            <PrivateRoute path={["/","/login"]} component={()=> <Login />} />
+            <PublicRoute path={["/","/login"]} component={()=> <Login />} />
            
         </Switch>
         </BrowserRouter>

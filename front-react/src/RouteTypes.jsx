@@ -10,8 +10,9 @@ export function PrivateRoute({ component: Component, ...rest }) {
     );
 }
 
-export function PublicRoute({component: Component, ...rest}) {
+export function PublicRoute({ component: Component, ...rest }) {
+    const { auth } = useTrackedState();
     return (
-        <Route {...rest} render={() => <Component />} />
+        <Route {...rest} render={() => auth? <Redirect to="/offers" /> : <Component />} />
     );
 }
