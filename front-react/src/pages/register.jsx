@@ -1,10 +1,10 @@
 import React from 'react';
-import Auth from '../components/auth';
+import AuthForm from '../components/AuthForm';
 
 
 export default function Register() {
 
     return (
-        <Auth type='register' />
+        <AuthForm type='register' />
     );
 }
