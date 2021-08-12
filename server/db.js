@@ -2,13 +2,13 @@ const mongodb = require("mongodb");
 
 const client = new mongodb.MongoClient("mongodb://localhost:27017");
 
-async function getUser(username) {
+async function getUserByName(username) {
   try {
     await client.connect();
     return await client
       .db("board_sales")
       .collection("users")
-      .findOne({ username: username });
+      .findOne({ username });
   } catch (err) {
     return {
       error: err,
@@ -18,13 +18,29 @@ async function getUser(username) {
   }
 }
 
+exports.getUserById = async (id) => {
+  try {
+    await client.connect();
+    return await client
+      .db("board_sales")
+      .collection("users")
+      .findOne({ _id: mongodb.ObjectId(id) });
+  } catch (err) {
+    return {
+      error: err,
+    };
+  } finally {
+    client.close();
+  }
+};
+
 // Takes a username and password as arguments
 // If user is already registered with the username or a problem has occured
 // Returns an object containing the error
 // Otherwise, adding it to the mongoDB
 exports.addUser = async (username, pass) => {
   try {
-    const user = await getUser(username);
+    const user = await getUserByName(username);
     await client.connect();
     if (user) {
       return {
@@ -40,7 +56,7 @@ exports.addUser = async (username, pass) => {
       });
     return {
       message: "user has succesfuly added",
-      id: newUser._id,
+      id: newUser.insertedId,
     };
   } catch (err) {
     return {
@@ -51,4 +67,4 @@ exports.addUser = async (username, pass) => {
   }
 };
 
-exports.getUser = getUser;
+exports.getUserByName = getUserByName;
