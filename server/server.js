@@ -2,10 +2,12 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const { addUser, getUser } = require("./db");
+const cors = require("cors");
+const { addUser, getUserByName, getUserById } = require("./db");
 const { secert } = require("./token.json");
 
 const app = express();
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -31,7 +33,12 @@ app.post("/register", async (req, res) => {
     return;
   }
   const token = createToken(result.id);
-  res.cookie("jwt", token, { httpOnly: true, maxAge: getTokenAge() * 1000 });
+  res.cookie("jwt", token, {
+    maxAge: getTokenAge() * 1000,
+    sameSite: true,
+    secure: true,
+    httpOnly: true,
+  });
   res.status(201).json({
     result: `User has succesfully register with the username: ${username}`,
   });
@@ -39,10 +46,17 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = await getUser(username);
+  const user = await getUserByName(username);
   if (user) {
     const auth = await bcrypt.compare(password, user.password);
     if (auth) {
+      const token = createToken(user._id);
+      res.cookie("jwt", token, {
+        maxAge: getTokenAge() * 1000,
+        sameSite: true,
+        secure: true,
+        httpOnly: true,
+      });
       res.status(201).json({
         auth,
       });
@@ -51,6 +65,24 @@ app.post("/login", async (req, res) => {
     res.status(400).json({
       auth,
       response: "Password incorrect",
+    });
+  }
+});
+
+app.get("/authenticate", async (req, res) => {
+  try {
+    const token = req.cookies["jwt"];
+    const auth = jwt.verify(token, secert);
+    const user = await getUserById(auth.id);
+
+    if (user) {
+      res.status(201).json({
+        response: "User is authenticated",
+      });
+    }
+  } catch (err) {
+    res.status(400).json({
+      response: "User is unauthenticated",
     });
   }
 });
