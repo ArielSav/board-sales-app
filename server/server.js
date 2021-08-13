@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const { addUser, getUserByName, getUserById } = require("./db");
+const { addUser, getUserByName, getUserById, addOffer } = require("./db");
 const { secert } = require("./token.json");
 
 const app = express();
@@ -69,13 +69,17 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/authenticate", async (req, res) => {
+const authenticate = async (req, res, next = null) => {
   try {
     const token = req.cookies["jwt"];
     const auth = jwt.verify(token, secert);
     const user = await getUserById(auth.id);
 
     if (user) {
+      if (next) {
+        next();
+        return;
+      }
       res.status(201).json({
         response: "User is authenticated",
       });
@@ -83,6 +87,36 @@ app.get("/authenticate", async (req, res) => {
   } catch (err) {
     res.status(400).json({
       response: "User is unauthenticated",
+    });
+  }
+};
+
+app.get("/authenticate", async (req, res) => {
+  authenticate(req, res);
+});
+
+app.use(async (req, res, next) => {
+  authenticate(req, res, next);
+});
+
+app.post("/addOffer", async (req, res) => {
+  try {
+    const { offer } = req.body;
+    const result = await addOffer(offer);
+    if (result.error) {
+      res.status(400).json({
+        message: "Error has occured",
+        error: result.error,
+      });
+      return;
+    }
+    res.status(201).json({
+      message: result.message,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error has occured",
+      error,
     });
   }
 });
