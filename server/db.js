@@ -55,13 +55,38 @@ exports.addUser = async (username, pass) => {
         password: pass,
       });
     return {
-      message: "user has succesfuly added",
+      message: "user has successfully added",
       id: newUser.insertedId,
     };
   } catch (err) {
     return {
       error: err,
     };
+  } finally {
+    client.close();
+  }
+};
+
+exports.addOffer = async (offer) => {
+  try {
+    await client.connect();
+    const { title, type, description, phoneNumber, email } = offer;
+    const newOffer = await client
+      .db("board_sales")
+      .collection("offers")
+      .insertOne({
+        title,
+        type,
+        description,
+        phoneNumber,
+        email,
+      });
+    return {
+      message: "Offer has successfully added",
+      id: newOffer.insertedId,
+    };
+  } catch (err) {
+    return { error: err };
   } finally {
     client.close();
   }
