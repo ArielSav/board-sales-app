@@ -1,11 +1,17 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { alpha, makeStyles } from '@material-ui/core/styles';
-import {AppBar, Toolbar, Typography, InputBase, Fab} from '@material-ui/core';
+import {AppBar, Toolbar, Typography, InputBase, Fab, Grid, CircularProgress} from '@material-ui/core';
 import { Search, Add } from '@material-ui/icons';
 
 import CreateOfferModal from '../components/CreateOfferModal';
+import OfferCard from '../components/OfferCard';
+import { getOffers } from '../helpers/db';
 
 const useStyles = makeStyles((theme) => ({
+  customBody: {
+    overflowX: "hidden",
+    overflowY: "hidden",
+  },
   grow: {
     flexGrow: 1,
   },
@@ -53,16 +59,24 @@ const useStyles = makeStyles((theme) => ({
     },
     },
     fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
+  offersGrid: {
+    display: 'flex',
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "1%",
+    }
 }));
 
 export default function Offers() {
     const classes = useStyles();
-    const [search, setSearch] = useState('');
-    const [openNewOfferModal, setOpenNewOfferModal] = useState(false);
+    const [filter, setFilter] = useState('');
+  const [openNewOfferModal, setOpenNewOfferModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [offers, setOffers] = useState([]);
 
     const handleNewOfferModalClose = () => {
         setOpenNewOfferModal(false);
@@ -70,12 +84,28 @@ export default function Offers() {
 
     const handleNewOfferModalOpen = () => {
         setOpenNewOfferModal(true);
-    }
+  }
+  
+  const populateOffers = () => {
+    getOffers(filter)
+      .then(result => {
+        setOffers(result);
+        setLoading(false);
+      })
+      .catch(err => { });
+   }
+
+  useEffect(() => {
+    populateOffers();
+  },[])
 
 
     return (
-        <div>
-            <CreateOfferModal open={openNewOfferModal} handleClose={() => handleNewOfferModalClose()}/>
+        <div className={classes.customBody}>
+        <CreateOfferModal open={openNewOfferModal} handleClose={() => {
+          populateOffers();
+          handleNewOfferModalClose();
+        }} />
             {/* Title component */}
             <div className={classes.grow}>
                 <AppBar position="static">
@@ -88,7 +118,7 @@ export default function Offers() {
                         <Search />
                         </div>
                             <InputBase
-                                onChange={ (e) => setSearch(e.target.value)}
+                                onChange={ (e) => setFilter(e.target.value)}
                         placeholder="Search…"
                         classes={{
                             root: classes.inputRoot,
@@ -99,8 +129,19 @@ export default function Offers() {
                     </div>
                     </Toolbar>
                 </AppBar>
-            </div>
-            <p>working on it!</p>
+        </div>
+        {
+          loading ? <CircularProgress /> : offers.length === 0 ? <p> You need to add offers!</p> :
+            <Grid container spacing={9} className={classes.offersGrid}>
+              {offers.map((offer) => {
+                return (
+                  <Grid key={offer._id} item xs={6}>
+                    <OfferCard offer={offer} />
+                  </Grid>
+                );
+               })}
+          </Grid> 
+        }
             <Fab onClick={()=> handleNewOfferModalOpen()} size="medium" color="secondary" aria-label="add" className={classes.fab}>
                 <Add />
             </Fab>
