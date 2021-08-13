@@ -92,4 +92,23 @@ exports.addOffer = async (offer) => {
   }
 };
 
+exports.getOffers = async (filter) => {
+  try {
+    await client.connect();
+    const offers = await client
+      .db("board_sales")
+      .collection("offers")
+      .find({})
+      .toArray();
+    return { offers };
+  } catch (err) {
+    return {
+      message: "Error has occured",
+      error: err,
+    };
+  } finally {
+    client.close();
+  }
+};
+
 exports.getUserByName = getUserByName;
