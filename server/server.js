@@ -3,7 +3,13 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const { addUser, getUserByName, getUserById, addOffer } = require("./db");
+const {
+  addUser,
+  getUserByName,
+  getUserById,
+  addOffer,
+  getOffers,
+} = require("./db");
 const { secert } = require("./token.json");
 
 const app = express();
@@ -121,4 +127,23 @@ app.post("/addOffer", async (req, res) => {
   }
 });
 
+app.get("/getOffers", async (req, res) => {
+  try {
+    const filter = req.query;
+    const result = await getOffers(filter);
+    if (result.error) {
+      res.status(400).json({
+        message: result.message,
+        error: result.error,
+      });
+      return;
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error has occured",
+      error,
+    });
+  }
+});
 app.listen(5000);
