@@ -147,4 +147,18 @@ app.get("/getOffers", async (req, res) => {
     });
   }
 });
+
+app.get("/logout", async (req, res) => {
+  try {
+    res.clearCookie("jwt");
+    res.status(200).json({
+      message: "User logout successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error has occured",
+      error,
+    });
+  }
+});
 app.listen(5000);
