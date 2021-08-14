@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { alpha, makeStyles } from '@material-ui/core/styles';
 import {AppBar, Toolbar, Typography, InputBase, Fab, Grid, CircularProgress} from '@material-ui/core';
 import { Search, Add } from '@material-ui/icons';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import classnames from 'classnames'
 
 import CreateOfferModal from '../components/CreateOfferModal';
 import OfferCard from '../components/OfferCard';
@@ -9,8 +11,10 @@ import { getOffers } from '../helpers/db';
 
 const useStyles = makeStyles((theme) => ({
   customBody: {
-    overflowX: "hidden",
-    overflowY: "hidden",
+    overflowX: "hidden!important",
+    overflowY: "hidden!important",
+    maxWidth: '100%!important',
+    maxHeight: '100%!important'
   },
   grow: {
     flexGrow: 1,
@@ -64,19 +68,21 @@ const useStyles = makeStyles((theme) => ({
     right: theme.spacing(2),
   },
   offersGrid: {
-    display: 'flex',
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "1%",
+    display: 'flex!important',
+    alignItems: "center!important",
+    justifyContent: "center!important",
+    padding: "1%!important",
     }
 }));
 
 export default function Offers() {
     const classes = useStyles();
-    const [filter, setFilter] = useState('');
+    const [filter, setFilter] = useState('none');
   const [openNewOfferModal, setOpenNewOfferModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [offers, setOffers] = useState([]);
+  // const [skip, setSkip] = useState(0);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
 
     const handleNewOfferModalClose = () => {
         setOpenNewOfferModal(false);
@@ -87,12 +93,15 @@ export default function Offers() {
   }
   
   const populateOffers = () => {
-    getOffers(filter)
+    getOffers(filter, offers.length)
       .then(result => {
-        setOffers(result);
-        setLoading(false);
+        if (result.length === 0) {
+          setHasMoreItems(false);
+        }
+        setOffers(offers.concat(result));
       })
-      .catch(err => { });
+      .catch(err => { })
+      .finally(() => setLoading(false));
    }
 
   useEffect(() => {
@@ -103,6 +112,7 @@ export default function Offers() {
     return (
         <div className={classes.customBody}>
         <CreateOfferModal open={openNewOfferModal} handleClose={() => {
+          setHasMoreItems(true);
           populateOffers();
           handleNewOfferModalClose();
         }} />
@@ -132,15 +142,23 @@ export default function Offers() {
         </div>
         {
           loading ? <CircularProgress /> : offers.length === 0 ? <p> You need to add offers!</p> :
-            <Grid container spacing={9} className={classes.offersGrid}>
-              {offers.map((offer) => {
-                return (
-                  <Grid key={offer._id} item xs={6}>
-                    <OfferCard offer={offer} />
-                  </Grid>
-                );
-               })}
-          </Grid> 
+            <InfiniteScroll
+              className={classnames(classes.customBody, classes.offersGrid)}
+              dataLength={offers.length}
+              next={() => populateOffers()}
+              hasMore={hasMoreItems}
+              loader={<CircularProgress />}
+            >
+                <Grid container spacing={9} >
+                {offers.map((offer) => {
+                  return (
+                    <Grid key={offer._id} item xs={6}>
+                      <OfferCard offer={offer} />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </InfiniteScroll> 
         }
             <Fab onClick={()=> handleNewOfferModalOpen()} size="medium" color="secondary" aria-label="add" className={classes.fab}>
                 <Add />
