@@ -95,19 +95,20 @@ exports.addOffer = async (offer) => {
 exports.getOffers = async (filter, skip) => {
   try {
     await client.connect();
+    let query = filter === "none" ? {} : { type: filter };
     let offers = [];
     if (skip === 0) {
       offers = await client
         .db("board_sales")
         .collection("offers")
-        .find({})
+        .find(query)
         .limit(10)
         .toArray();
     } else {
       offers = await client
         .db("board_sales")
         .collection("offers")
-        .find({})
+        .find(query)
         .limit(10)
         .skip(skip)
         .toArray();
