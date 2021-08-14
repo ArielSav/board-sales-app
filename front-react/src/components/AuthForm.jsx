@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import { Button, TextField, Grid, makeStyles } from '@material-ui/core';
 import {useHistory} from 'react-router-dom'
-import axios from 'axios';
 
+import { handleAuth } from '../helpers/auth';
 import {useSetState} from '../Provider'
 
 const useStyles = makeStyles(() => ({
@@ -27,25 +27,15 @@ export default function AuthForm({ type }) {
     const setState = useSetState();
 
     const handleOnCLick = () => {
-        axios.post(
-            `http://localhost:5000/${type}`,
-            JSON.stringify({
-                username: userName,
-                password
-            }),
-            {
-                withCredentials: true,
-                credentials: 'include',
-                headers: {
-                    "Content-Type": "application/json"
+        handleAuth({userName,password,type})
+            .then((auth) => {
+                if (auth) {
+                    setState(() => ({ auth }));
+                    // history.push("/offers");
                 }
-            }
-            )
-            .then((res => {
-                setState(() => ({ auth: true }));
-                history.push("/offers");
-            }))
-            .catch(err => console.log(err));
+        
+            })
+            .catch(err => { });
     }
 
     const classes = useStyles();
@@ -56,7 +46,8 @@ export default function AuthForm({ type }) {
                     <div className={classes.paper}>
                         <TextField onChange={(event)=> setUserName(event.target.value)} label="Username" />
                         <TextField onChange={(event)=> setPassword(event.target.value)} label="Password" type="password" />
-                        <Button onClick={() => handleOnCLick()} color='primary'>{type ==='register' ? "register now!" : "log in" }</Button>
+                        <Button onClick={() => handleOnCLick()} color='primary'>{type === 'register' ? "register now!" : "log in"}</Button>
+                        {type === "login" ? <Button color="primary" onClick={() => { history.push("/register") }}>Don't have a user? Register here!</Button> : <Button color="primary" onClick={() => history.push("/login")}>already have a user? log in here!</Button>}
                     </div>
                 </Grid>
             </Grid>
