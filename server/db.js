@@ -92,14 +92,26 @@ exports.addOffer = async (offer) => {
   }
 };
 
-exports.getOffers = async (filter) => {
+exports.getOffers = async (filter, skip) => {
   try {
     await client.connect();
-    const offers = await client
-      .db("board_sales")
-      .collection("offers")
-      .find({})
-      .toArray();
+    let offers = [];
+    if (skip === 0) {
+      offers = await client
+        .db("board_sales")
+        .collection("offers")
+        .find({})
+        .limit(10)
+        .toArray();
+    } else {
+      offers = await client
+        .db("board_sales")
+        .collection("offers")
+        .find({})
+        .limit(10)
+        .skip(skip)
+        .toArray();
+    }
     return { offers };
   } catch (err) {
     return {

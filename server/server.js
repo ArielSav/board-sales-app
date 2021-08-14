@@ -129,8 +129,9 @@ app.post("/addOffer", async (req, res) => {
 
 app.get("/getOffers", async (req, res) => {
   try {
-    const filter = req.query;
-    const result = await getOffers(filter);
+    const filter = req.query.filter;
+    const skip = req.query.skip;
+    const result = await getOffers(filter, parseInt(skip));
     if (result.error) {
       res.status(400).json({
         message: result.message,
