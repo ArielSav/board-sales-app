@@ -21,10 +21,10 @@ export async function addOffer(offer) {
   return success;
 }
 
-export async function getOffers(filter) {
+export async function getOffers(filter, skip) {
   let offers = [];
   await axios
-    .get(`http://localhost:5000/getOffers?${filter}`, {
+    .get(`http://localhost:5000/getOffers?filter=${filter}&skip=${skip}`, {
       withCredentials: true,
       credentials: "include",
     })
