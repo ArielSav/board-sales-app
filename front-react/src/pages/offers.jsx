@@ -1,13 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {AppBar, Toolbar, Typography,FormControl, InputLabel, MenuItem, Fab, Grid, CircularProgress, Select} from '@material-ui/core';
+import {AppBar, Toolbar, Typography,FormControl, InputLabel,Button, MenuItem, Fab, Grid, CircularProgress, Select} from '@material-ui/core';
 import { Add } from '@material-ui/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import classnames from 'classnames'
 
 import CreateOfferModal from '../components/CreateOfferModal';
 import OfferCard from '../components/OfferCard';
+import { useSetState } from '../Provider';
 import { getOffers } from '../helpers/db';
+import { logout } from '../helpers/auth';
 
 const useStyles = makeStyles((theme) => ({
   customBody: {
@@ -40,8 +42,15 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center!important",
     justifyContent: "center!important",
     padding: "1%!important",
-    }
+  },
+  logout: {
+    position: 'fixed',
+    right: theme.spacing(2),
+    backgroundColor: "#FF4848",
+  }
 }));
+
+
 
 export default function Offers() {
     const classes = useStyles();
@@ -49,8 +58,8 @@ export default function Offers() {
   const [openNewOfferModal, setOpenNewOfferModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [offers, setOffers] = useState([]);
-  // const [skip, setSkip] = useState(0);
   const [hasMoreItems, setHasMoreItems] = useState(true);
+  const setState = useSetState();
 
     const handleNewOfferModalClose = () => {
         setOpenNewOfferModal(false);
@@ -63,7 +72,7 @@ export default function Offers() {
   const populateOffers = () => {
     getOffers(filter, offers.length)
       .then(result => {
-        if (result.length === 0) {
+        if (result.length < 10) {
           setHasMoreItems(false);
         }
         else {
@@ -89,7 +98,7 @@ export default function Offers() {
         }} />
             {/* Title component */}
             <div className={classes.grow}>
-                <AppBar position="static">
+                <AppBar position="fixed">
                     <Toolbar>
                     <Typography className={classes.title} variant="h6" noWrap>
                         Ariel's Sales!
@@ -106,7 +115,12 @@ export default function Offers() {
                                 <MenuItem value={"realEstate"}>Real Estate</MenuItem>
                                 <MenuItem value={"clothing"}>Clothing</MenuItem>
                             </Select>
-                        </FormControl>
+              </FormControl>
+              <Button className={classes.logout} color="secondary" onClick={() => {
+                logout().then(() => setState(() => ({ auth: false })));
+              } }>
+                logout
+              </Button>
                     </Toolbar>
                 </AppBar>
         </div>
