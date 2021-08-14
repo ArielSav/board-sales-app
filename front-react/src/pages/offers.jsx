@@ -38,10 +38,11 @@ const useStyles = makeStyles((theme) => ({
     right: theme.spacing(2),
   },
   offersGrid: {
-    display: 'flex!important',
-    alignItems: "center!important",
-    justifyContent: "center!important",
-    padding: "1%!important",
+    display: 'flex',
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "1%",
+    marginTop: "7%",
   },
   logout: {
     position: 'fixed',
