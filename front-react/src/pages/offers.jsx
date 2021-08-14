@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { alpha, makeStyles } from '@material-ui/core/styles';
-import {AppBar, Toolbar, Typography, InputBase, Fab, Grid, CircularProgress} from '@material-ui/core';
-import { Search, Add } from '@material-ui/icons';
+import { makeStyles } from '@material-ui/core/styles';
+import {AppBar, Toolbar, Typography,FormControl, InputLabel, MenuItem, Fab, Grid, CircularProgress, Select} from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import classnames from 'classnames'
 
@@ -25,44 +25,12 @@ const useStyles = makeStyles((theme) => ({
       display: 'block',
     },
   },
-  search: {
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
+  formControl: {
+        margin: theme.spacing(1,0,2.5,3),
+        minWidth: 120,
     },
-    marginRight: theme.spacing(2),
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
-  },
-  searchIcon: {
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputRoot: {
-    color: 'inherit',
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-    },
-    fab: {
+
+  fab: {
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
@@ -98,6 +66,9 @@ export default function Offers() {
         if (result.length === 0) {
           setHasMoreItems(false);
         }
+        else {
+          setHasMoreItems(true);
+        }
         setOffers(offers.concat(result));
       })
       .catch(err => { })
@@ -106,7 +77,7 @@ export default function Offers() {
 
   useEffect(() => {
     populateOffers();
-  },[])
+  },[filter])
 
 
     return (
@@ -123,20 +94,19 @@ export default function Offers() {
                     <Typography className={classes.title} variant="h6" noWrap>
                         Ariel's Sales!
                     </Typography>
-                    <div className={classes.search}>
-                        <div className={classes.searchIcon}>
-                        <Search />
-                        </div>
-                            <InputBase
-                                onChange={ (e) => setFilter(e.target.value)}
-                        placeholder="Search…"
-                        classes={{
-                            root: classes.inputRoot,
-                            input: classes.inputInput,
-                        }}
-                        inputProps={{ 'aria-label': 'search' }}
-                        />
-                    </div>
+                    <FormControl className={classes.formControl}>
+                            <InputLabel>Filter By Type</InputLabel>
+                <Select value={filter} onChange={(e) => {
+                  setFilter(e.target.value);
+                  setOffers([]);
+                }}>
+                                <MenuItem value={"none"}>All</MenuItem>
+                                <MenuItem value={"cars"}>Cars</MenuItem>
+                                <MenuItem value={"electronics"}>Electronics</MenuItem>
+                                <MenuItem value={"realEstate"}>Real Estate</MenuItem>
+                                <MenuItem value={"clothing"}>Clothing</MenuItem>
+                            </Select>
+                        </FormControl>
                     </Toolbar>
                 </AppBar>
         </div>
